@@ -1,0 +1,29 @@
+{
+  "name": "sui-move-security-skills",
+  "owner": {
+    "name": "Northlatch Labs LLC"
+  },
+  "metadata": {
+    "description": "Sui-native security skills for Claude Code and any agentskills.io client — one Move-specific detector per skill, starting with the Cetus-class checked_shlw overflow.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "sui-move-security-skills",
+      "source": "./",
+      "description": "Nine Sui Move security detectors: checked-shlw-overflow, shared-object-access-control, capability-leakage, one-time-witness, ability-misuse, visibility-escalation, upgrade-cap-hygiene, ptb-hot-potato, oracle-spoof-token.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Northlatch Labs LLC"
+      },
+      "keywords": [
+        "sui",
+        "move",
+        "security",
+        "audit",
+        "smart-contracts"
+      ],
+      "category": "security"
+    }
+  ]
+}

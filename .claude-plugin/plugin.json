@@ -1,0 +1,17 @@
+{
+  "name": "sui-move-security-skills",
+  "description": "Sui-native security skills for Claude Code and any agentskills.io client: nine detectors for the failure classes that exist on Sui Move and not on the EVM. No reentrancy theatre.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Northlatch Labs LLC"
+  },
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "sui",
+    "move",
+    "security",
+    "audit",
+    "smart-contracts",
+    "static-analysis"
+  ]
+}
