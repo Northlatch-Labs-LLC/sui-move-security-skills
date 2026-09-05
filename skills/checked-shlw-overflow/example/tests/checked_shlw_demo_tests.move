@@ -31,4 +31,30 @@ module checked_shlw_demo::fixed_point_tests {
         let result = fixed_point::checked_shlw_fixed(n);
         assert!(result == (n << 64), 0);
     }
+
+    /// THE BOUNDARY, REJECT SIDE. `n = 2^192` is the first value the shift
+    /// cannot survive: `2^192 << 64 = 2^256`, whose low 256 bits are exactly
+    /// `0`. The correct guard is `n < 2^192`, so this must abort. Without
+    /// this test, weakening the guard to `n <= bound` — the classic
+    /// off-by-one, and the same class of mistake as the Cetus wrong mask —
+    /// changes nothing the suite can see, and the tests above pass either
+    /// way because 2^195 is rejected by both forms.
+    #[test]
+    #[expected_failure(abort_code = 0)]
+    fun fixed_guard_rejects_the_first_unsafe_value() {
+        let n: u256 = 1u256 << 192;
+        fixed_point::checked_shlw_fixed(n);
+    }
+
+    /// THE BOUNDARY, ACCEPT SIDE. `n = 2^192 - 1` is the largest value that
+    /// survives intact: `(2^192 - 1) << 64 = 2^256 - 2^64`, which still fits
+    /// in u256. Without this test, tightening the guard below its true bound
+    /// would reject legitimate inputs and no test would go red — the reject
+    /// side alone measures only one direction.
+    #[test]
+    fun fixed_guard_accepts_the_largest_safe_value() {
+        let n: u256 = (1u256 << 192) - 1;
+        let result = fixed_point::checked_shlw_fixed(n);
+        assert!(result == (n << 64), 0);
+    }
 }

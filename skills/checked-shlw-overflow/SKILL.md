@@ -141,7 +141,30 @@ fun fixed_guard_rejects_unsafe_value() {
 }
 ```
 
-Both ran and passed (`sui move test`: 3 passed, 0 failed).
+**The two tests that trip the boundary.** The pair above is not enough, and the reason is
+worth more than the pair itself. `2^195` is rejected by `n < 2^192` and by `n <= 2^192`
+alike, so neither test can tell a correct bound from an off-by-one — the exact mistake
+class this skill is about. The safe range is closed on one side and open on the other, so
+the boundary needs a test on each side of it:
+
+```move
+#[test]
+#[expected_failure(abort_code = 0)]
+fun fixed_guard_rejects_the_first_unsafe_value() {
+    let n: u256 = 1u256 << 192;                     // 2^192 << 64 = 2^256 -> low bits 0
+    checked_shlw_demo::fixed_point::checked_shlw_fixed(n);
+}
+
+#[test]
+fun fixed_guard_accepts_the_largest_safe_value() {
+    let n: u256 = (1u256 << 192) - 1;               // -> 2^256 - 2^64, still fits
+    let result = checked_shlw_demo::fixed_point::checked_shlw_fixed(n);
+    assert!(result == (n << 64), 0);
+}
+```
+
+All four ran and passed (`sui move test`: 5 passed, 0 failed, counting the buggy-guard
+test).
 
 **The mutation that proves the test notices.** Per the estate's move-mutate discipline
 (`engineering:move-mutate`): derive one mutation per `assert!` and confirm the suite kills
@@ -152,11 +175,29 @@ it. Reintroducing the Cetus-class wrong bound into the *fixed* function —
 + let bound: u256 = 0xffffffffffffffffu256 << 192; // MUTATION
 ```
 
-— and re-running `sui move test` turns `fixed_guard_rejects_unsafe_value` red
-(`Test did not error as expected`), because the guard no longer aborts on the unsafe input.
-That failure is the mutation being killed: the suite noticed the guard was weakened. A
-guard with no test that goes red under this mutation is a coverage gap on a money path,
-full stop — classify it, do not wave it through.
+— and re-running `sui move test` turns two tests red (`Test did not error as expected`),
+because the guard no longer aborts on the unsafe input.
+
+Do not stop at that one. A whole-bound replacement is a large mutation and almost any
+reject-path test kills it; the mutation that actually measures a bound is the one-character
+one, and it is the one people ship past:
+
+```diff
+- assert!(n < bound, 0);
++ assert!(n <= bound, 0);   // MUTATION: the off-by-one
+```
+
+That turns `fixed_guard_rejects_the_first_unsafe_value` red and nothing else. Run the
+tightening direction too — `1u256 << 192` to `1u256 << 191` — which turns
+`fixed_guard_accepts_the_largest_safe_value` red and nothing else. A bound that only has
+tests far outside it is measured in neither direction.
+
+Recorded plainly because this pack got it wrong first: the example shipped with the
+whole-bound mutation demonstrated and killed, and the off-by-one survived it silently. A
+mutation set that only contains mutations the suite already kills is a decoration, and the
+survivor is the entire product of the exercise. A guard with no test that goes red under
+the one-character mutation is a coverage gap on a money path, full stop — classify it, do
+not wave it through.
 
 ## Report shape
 
