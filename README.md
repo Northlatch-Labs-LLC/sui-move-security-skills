@@ -3,6 +3,9 @@
 Sui-native security skills for Claude Code and any agentskills.io client; no reentrancy
 theatre.
 
+Published by **Northlatch Labs LLC**, under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+
 Move has no dynamic dispatch, so reentrancy does not exist on Sui the way it does on the
 EVM; integer overflow already aborts by default. Porting an EVM audit checklist here mostly
 ports the wrong list. This pack is nine skills, each one detector for a failure class that
@@ -79,3 +82,7 @@ digest against source, and they do not watch an upgrade for drift. That is
 gates in your own CI (build, deployed-digest guard, tests, framework pin, mutation smoke),
 free for one public repository, $149/repo/month beyond that. Start with these skills; when
 you want the same discipline running on every pull request, that is what Verify is for.
+
+---
+
+**Northlatch Labs LLC** — [weir.social](https://weir.social) · [protocolx.io](https://protocolx.io)
